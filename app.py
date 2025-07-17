@@ -29,9 +29,17 @@ def receiver():
 def get_data():
     return jsonify(stored_data), 200
 
+@app.route('/latest', methods=['GET'])
+def get_latest():
+    if not stored_data:
+        return jsonify({'error': 'No data available'}), 404
+    return jsonify(stored_data[-1]), 200
+
+
 @app.route('/')
 def home():
     return 'Backend is running', 200
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
