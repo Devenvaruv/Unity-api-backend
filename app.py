@@ -3,11 +3,31 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+stored_data = []  # optional, in-memory store for receiver testing
+
 @app.route('/submit', methods=['POST'])
 def submit():
     data = request.json
-    print("Received JSON:", data)
+    print("Received at /submit:", data)
+
+    # Forward to /receiver
+    response = app.test_client().post('/receiver', json=data)
+
+    if response.status_code != 200:
+        return jsonify({'status': 'error', 'details': response.get_data(as_text=True)}), 500
+
     return jsonify({'status': 'ok'}), 200
+
+@app.route('/receiver', methods=['POST'])
+def receiver():
+    data = request.json
+    print("Received at /receiver:", data)
+    stored_data.append(data)
+    return jsonify({'received': True}), 200
+
+@app.route('/data', methods=['GET'])
+def get_data():
+    return jsonify(stored_data), 200
 
 @app.route('/')
 def home():
